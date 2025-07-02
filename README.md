@@ -93,25 +93,40 @@ Make sure your MongoDB database is running and accessible. The application will 
 
 ## 🏃‍♂️ Running the Application
 
-### Development Mode
+### 🚀 Quick Start (Recommended)
 
-You need to run both the frontend and backend servers:
+Run both frontend and backend servers simultaneously with a single command:
+
+```bash
+npm run dev:colored
+```
+
+This will start:
+
+- **Backend Server**: `http://localhost:3000` (Express API)
+- **Frontend Server**: `http://localhost:8080` (React App)
+
+### Alternative Development Options
+
+**Option 1 - Simple Concurrent:**
+
+```bash
+npm run dev:full
+```
+
+**Option 2 - Separate Terminals:**
 
 **Terminal 1 - Backend Server:**
 
 ```bash
-npm run dev
+npm run server
 ```
-
-This starts the Express server on `http://localhost:3000`
 
 **Terminal 2 - Frontend Server:**
 
 ```bash
-npm start
+npm run client
 ```
-
-This starts the React development server on `http://localhost:8080`
 
 ### Production Build
 
