@@ -81,8 +81,6 @@ Create a `.env` file in the root directory and add the following variables:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
-GOOGLE_CLIENT_ID=your_google_client_id_here
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 MONGODB_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_jwt_secret_here
 ```
