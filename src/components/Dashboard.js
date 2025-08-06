@@ -4,7 +4,7 @@ import PracticeProblem from './PracticeProblem';
 import Strategy from './Strategy';
 import History from './History';
 import InputProblem from './InputProblem';
-import apiFetch from '../apiFetch';
+import ApiFetch from '../apiFetch';
 import { googleLogout } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import brainIcon from '../assets/images/brain.png';
@@ -72,7 +72,7 @@ function Dashboard() {
     setLoading(true);
 
     try {
-      const result = await apiFetch.requestStrategy(userQuery);
+      const result = await ApiFetch.requestStrategy(userQuery);
       console.log('result', result);
       console.log('generated strategy:', result.responseStrategy);
       //setHistory(result);
@@ -99,7 +99,7 @@ function Dashboard() {
   const getPracticeProblems = async () => {
     setLoading(true);
     try {
-      const result = await apiFetch.requestPracticeProblems(userQuery);
+      const result = await ApiFetch.requestPracticeProblems(userQuery);
       console.log('generated practice problems: ', result);
       setPracticeProblems(result);
       setEntryObj((prev) => ({
@@ -119,7 +119,7 @@ function Dashboard() {
     //function that runs once the entry object has all the parameters
     try {
       console.log('entryObj to store in DB', entryObj);
-      const response = await apiFetch.storeHistoryObj({
+      const response = await ApiFetch.storeHistoryObj({
         ...entryObj,
         userName,
       });

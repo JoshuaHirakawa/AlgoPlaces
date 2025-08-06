@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiFetch from '../apiFetch';
+import ApiFetch from '../apiFetch';
 import { MutatingDots } from 'react-loader-spinner';
 
 function History({
@@ -31,7 +31,7 @@ function History({
   const getHistoryObject = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const response = await apiFetch.getHistory(user.name);
+      const response = await ApiFetch.getHistory(user.name);
       console.log('data in getHistoryObject', response);
       setHistoryObj(response || []); // Ensure historyObj is always an array
       console.log('historyObj', historyObj);
@@ -49,7 +49,7 @@ function History({
     try {
       console.log('title in handleMatchTitle', title);
       const user = JSON.parse(localStorage.getItem('user'));
-      const response = await apiFetch.matchTitle(title, user.name);
+      const response = await ApiFetch.matchTitle(title, user.name);
       console.log('Requested entry object from Database:', response);
       setEntryObj(response);
     } catch (err) {
