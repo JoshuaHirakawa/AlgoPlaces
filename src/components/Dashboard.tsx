@@ -1,94 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PracticeProblem from './PracticeProblem';
 import Strategy from './Strategy';
 import History from './History';
 import InputProblem from './InputProblem';
 import ApiFetch from '../apiFetch';
 import { googleLogout } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
 import brainIcon from '../assets/images/brain.png';
 import plusIcon from '../assets/images/plus.png';
 import historyIcon from '../assets/images/history.png';
 import logoutIcon from '../assets/images/log-out.png';
 import '../App.css';
 
-function Dashboard() {
+// Type definitions
+interface LocationState {
+  userQuery: string;
+}
+
+interface User {
+  name: string;
+  email?: string;
+  picture?: string;
+}
+
+interface PracticeProblem {
+  title: string;
+  difficulty: string;
+  description: string;
+  hints?: string[];
+}
+
+interface EntryObject {
+  title: string;
+  prompt: string;
+  responseStrategy: string;
+  probability: number;
+  practiceProblems: PracticeProblem[];
+}
+
+// API response types to match the actual backend
+interface ApiStrategyResponse {
+  title?: string;
+  prompt?: string;
+  responseStrategy?: string;
+  probability?: number;
+  approach?: string;
+  steps?: string[];
+  timeComplexity?: string;
+  spaceComplexity?: string;
+}
+
+const Dashboard: React.FC = () => {
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
-  const { userQuery } = location.state;
-  const [title, setTitle] = useState('');
-  const [strategy, setStrategy] = useState('');
-  const [probability, setProbability] = useState('');
-  const [practiceProblems, setPracticeProblems] = useState([]);
-  const [prompt, setPrompt] = useState('');
-  const [entryObj, setEntryObj] = useState({
-    //set history obj with query info to the response obj the server is sending back
+  const navigate = useNavigate();
+
+  // Type assertion for location state
+  const { userQuery } = (location.state as LocationState) || { userQuery: '' };
+
+  // State with proper types
+  const [loading, setLoading] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
+  const [strategy, setStrategy] = useState<string>('');
+  const [probability, setProbability] = useState<string>('');
+  const [practiceProblems, setPracticeProblems] = useState<PracticeProblem[]>(
+    []
+  );
+  const [prompt, setPrompt] = useState<string>('');
+  const [entryObj, setEntryObj] = useState<EntryObject>({
     title: '',
     prompt: '',
     responseStrategy: '',
     probability: 0,
     practiceProblems: [],
   });
-  const [historyObjIsComplete, setHistoryObjIsComplete] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [refreshHistory, setRefreshHistory] = useState(false);
-
-  /// navigate for signout and new prompt buttons in header
-  const navigate = useNavigate();
+  const [historyObjIsComplete, setHistoryObjIsComplete] =
+    useState<boolean>(false);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true);
+  const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>('');
+  const [refreshHistory, setRefreshHistory] = useState<boolean>(false);
 
   /// on mount, extract user name from localStorage and save to useState
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user && !user.name) {
+    const userItem = localStorage.getItem('user');
+    if (!userItem) {
       console.log(
         'No user Identified, Please go back to login page and try again.'
       );
+      return;
     }
-    setUserName(user.name);
-    console.log('extracted user:', user.name);
+
+    try {
+      const user: User = JSON.parse(userItem);
+      if (!user || !user.name) {
+        console.log(
+          'No user Identified, Please go back to login page and try again.'
+        );
+        return;
+      }
+      setUserName(user.name);
+      console.log('extracted user:', user.name);
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+    }
   }, []);
 
-  ///logging user object after auth
-  // console.log(
-  //   'user object from authentication using getItem method:',
-  //   localStorage.getItem('user')
-  // );
-
   console.log('This is the query sent to us from da landing page: ', userQuery);
+
   /// HANDLER FUNCTION TO LOGOUT
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     googleLogout();
-    // console.log(
-    //   'user before deleting and loging out:',
-    //   localStorage.getItem('user')
-    // );
     localStorage.removeItem('user');
     navigate('/');
   };
-  const getStrategy = async () => {
+
+  const getStrategy = async (): Promise<void> => {
     setLoading(true);
 
     try {
-      const result = await ApiFetch.requestStrategy(userQuery);
+      const result = (await ApiFetch.requestStrategy(
+        userQuery
+      )) as ApiStrategyResponse;
       console.log('result', result);
-      console.log('generated strategy:', result.responseStrategy);
-      //setHistory(result);
-      setTitle(result.title);
-      setStrategy(result.responseStrategy);
-      setProbability(result.probability);
-      setPrompt(result.prompt);
-      //use a functional state update to update the history object
-      setEntryObj((prev) => ({
-        ...prev,
-        title: result.title,
-        prompt: result.prompt,
-        responseStrategy: result.responseStrategy,
-        probability: result.probability,
-      }));
-      // console.log("Here's the history object from the first API call: ", history)
+
+      if (result) {
+        console.log('generated strategy:', result.responseStrategy);
+        setTitle(result.title || '');
+        setStrategy(result.responseStrategy || '');
+        setProbability(result.probability?.toString() || '');
+        setPrompt(result.prompt || '');
+
+        // Use a functional state update to update the history object
+        setEntryObj((prev) => ({
+          ...prev,
+          title: result.title || '',
+          prompt: result.prompt || '',
+          responseStrategy: result.responseStrategy || '',
+          probability: result.probability || 0,
+        }));
+      }
     } catch (error) {
       console.error('Error in getStrategy:', error);
     } finally {
@@ -96,18 +146,20 @@ function Dashboard() {
     }
   };
 
-  const getPracticeProblems = async () => {
+  const getPracticeProblems = async (): Promise<void> => {
     setLoading(true);
     try {
       const result = await ApiFetch.requestPracticeProblems(userQuery);
       console.log('generated practice problems: ', result);
-      setPracticeProblems(result);
-      setEntryObj((prev) => ({
-        ...prev,
-        practiceProblems: result,
-      }));
-      setHistoryObjIsComplete(true);
-      // console.log("Here's the history object from the SECOND API call, should include practice probs: ", history)
+
+      if (result && result.problems) {
+        setPracticeProblems(result.problems);
+        setEntryObj((prev) => ({
+          ...prev,
+          practiceProblems: result.problems || [],
+        }));
+        setHistoryObjIsComplete(true);
+      }
     } catch (err) {
       console.error(`This is the error in getPracticeProblems: ${err}`);
     } finally {
@@ -115,13 +167,16 @@ function Dashboard() {
     }
   };
 
-  const storeHistory = async () => {
-    //function that runs once the entry object has all the parameters
+  const storeHistory = async (): Promise<void> => {
+    // Function that runs once the entry object has all the parameters
     try {
       console.log('entryObj to store in DB', entryObj);
       const response = await ApiFetch.storeHistoryObj({
-        ...entryObj,
         userName,
+        problemTitle: entryObj.title,
+        strategy: entryObj.responseStrategy,
+        practiceProblems: entryObj.practiceProblems,
+        timestamp: new Date().toISOString(),
       });
       console.log('response from storing history:', response);
       setRefreshHistory(true);
@@ -129,13 +184,16 @@ function Dashboard() {
       console.error(`This is the error in storingHistory: ${err}`);
     }
   };
+
   /// HANDLER TO NAVIGATE TO LANDING PAGE FOR NEW PROMPT
-  const handleNewPrompt = () => {
+  const handleNewPrompt = (): void => {
     navigate('/landingpage');
   };
 
   useEffect(() => {
-    getStrategy();
+    if (userQuery) {
+      getStrategy();
+    }
   }, [userQuery]);
 
   useEffect(() => {
@@ -144,29 +202,29 @@ function Dashboard() {
       getPracticeProblems();
       setInitialLoad(false);
     }
-  }, [strategy]);
+  }, [strategy, initialLoad]);
 
   useEffect(() => {
     console.log('practiceProblems state:', practiceProblems);
   }, [practiceProblems]);
 
   useEffect(() => {
-    //stores history object in database when ready
+    // Stores history object in database when ready
     console.log('history updated: ', entryObj);
     if (historyObjIsComplete || entryObj.practiceProblems.length > 0) {
-      //condition to check before calling the fetch function
+      // Condition to check before calling the fetch function
       setHistoryObjIsComplete(false);
-      storeHistory(entryObj);
+      storeHistory();
     }
 
     if (!initialLoad) {
       setTitle(entryObj.title);
       setStrategy(entryObj.responseStrategy);
-      setProbability(entryObj.probability);
+      setProbability(entryObj.probability.toString());
       setPracticeProblems(entryObj.practiceProblems);
       setPrompt(entryObj.prompt);
     }
-  }, [entryObj]);
+  }, [entryObj, historyObjIsComplete, initialLoad]);
 
   return (
     <div className='relative fade-in'>
@@ -256,7 +314,7 @@ function Dashboard() {
           <div className='flex-1 bg-gradient-to-b from-[#022839] to-[#3e3656]'>
             <History
               loading={loading}
-              entry={entryObj}
+              entryObj={entryObj}
               setEntryObj={setEntryObj}
               onClose={() => setIsHistoryOpen(false)}
               refreshHistory={refreshHistory}
@@ -267,6 +325,6 @@ function Dashboard() {
       </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
