@@ -4,22 +4,25 @@ import submitIcon from '../assets/images/up-arrow.png';
 import brainIcon from '../assets/images/brain.png';
 import '../App.css';
 
-function LandingPage() {
-  //create useState that updates empty query
-  const [query, setQuery] = useState(''); //query is originally an empty string
-  const navigate = useNavigate(); //create a useNav function
-  const handleSubmit = (event) => {
-    event.preventDefault(); //prevents canceled submission
-    console.log('Form is sumbmitted, here is the query: ', query);
+const LandingPage: React.FC = () => {
+  // Create useState that updates empty query
+  const [query, setQuery] = useState<string>(''); // query is originally an empty string
+  const navigate = useNavigate(); // create a useNav function
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault(); // prevents canceled submission
+    console.log('Form is submitted, here is the query: ', query);
     if (!query) {
       return;
-      //prevent empty submissions
+      // prevent empty submissions
     }
-    //handleClick will only navigate and pass state of query to Dashboard, apiFetch call will happen in Dashboard.js
-    navigate('/dashboard', { state: { userQuery: query } }); //userQuery var will be sent to Dashboard.js, use useLocation to extract!
+    // handleClick will only navigate and pass state of query to Dashboard, apiFetch call will happen in Dashboard.js
+    navigate('/dashboard', { state: { userQuery: query } }); // userQuery var will be sent to Dashboard.js, use useLocation to extract!
   };
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ): void => {
     setQuery(event.target.value);
     event.target.style.height = 'auto';
     event.target.style.height = `${event.target.scrollHeight}px`;
@@ -51,7 +54,6 @@ function LandingPage() {
           >
             <div className='relative w-full max-w-[800px] min-w-[400px] max-h-[600px] mx-auto'>
               <textarea
-                type='text'
                 value={query}
                 onChange={handleInputChange}
                 placeholder="Tell us your problem, we'll help ya!"
@@ -73,6 +75,6 @@ function LandingPage() {
       </div>
     </div>
   );
-}
+};
 
 export default LandingPage;
