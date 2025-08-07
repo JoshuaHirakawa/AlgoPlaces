@@ -2,17 +2,56 @@ import React, { useState, useEffect } from 'react';
 import ApiFetch from '../apiFetch';
 import { MutatingDots } from 'react-loader-spinner';
 
-function History({
+// Type definitions
+interface User {
+  name: string;
+  email?: string;
+  picture?: string;
+}
+
+interface PracticeProblem {
+  title: string;
+  difficulty: string;
+  description: string;
+  hints?: string[];
+}
+
+interface EntryObject {
+  title: string;
+  prompt: string;
+  responseStrategy: string;
+  probability: number;
+  practiceProblems: PracticeProblem[];
+}
+
+interface HistoryItem {
+  userName: string;
+  problemTitle: string;
+  strategy?: string;
+  practiceProblems?: any[];
+  timestamp?: Date | string;
+}
+
+interface HistoryProps {
+  loading: boolean;
+  entryObj: EntryObject;
+  setEntryObj: React.Dispatch<React.SetStateAction<EntryObject>>;
+  onClose: () => void;
+  refreshHistory: boolean;
+  setRefreshHistory: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const History: React.FC<HistoryProps> = ({
   loading,
   entryObj,
   setEntryObj,
   onClose,
   refreshHistory,
   setRefreshHistory,
-}) {
-  const [historyObj, setHistoryObj] = useState([]);
-  const [containerLoaded, setContainerLoaded] = useState(false);
-  const [contentLoaded, setContentLoaded] = useState(false);
+}) => {
+  const [historyObj, setHistoryObj] = useState<HistoryItem[]>([]);
+  const [containerLoaded, setContainerLoaded] = useState<boolean>(false);
+  const [contentLoaded, setContentLoaded] = useState<boolean>(false);
 
   /// USE EFFECT For container fade-in on mount
   useEffect(() => {
@@ -28,15 +67,37 @@ function History({
     setContentLoaded(false);
   }, [loading, historyObj]);
 
-  const getHistoryObject = async () => {
+  const getHistoryObject = async (): Promise<void> => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
+      const userItem = localStorage.getItem('user');
+      if (!userItem) {
+        console.error('No user found in localStorage');
+        setHistoryObj([]);
+        return;
+      }
+
+      const user: User = JSON.parse(userItem);
+      if (!user || !user.name) {
+        console.error('Invalid user data');
+        setHistoryObj([]);
+        return;
+      }
+
       const response = await ApiFetch.getHistory(user.name);
       console.log('data in getHistoryObject', response);
-      setHistoryObj(response || []); // Ensure historyObj is always an array
+
+      // Handle the response based on the API structure
+      if (response && response.history && Array.isArray(response.history)) {
+        setHistoryObj(response.history);
+      } else if (Array.isArray(response)) {
+        setHistoryObj(response);
+      } else {
+        setHistoryObj([]);
+      }
+
       console.log('historyObj', historyObj);
     } catch (err) {
-      console.error(`This is the error in storingHistory: ${err}`);
+      console.error(`This is the error in getHistoryObject: ${err}`);
       setHistoryObj([]); // Set historyObj to an empty array on error
     }
   };
@@ -45,13 +106,35 @@ function History({
     getHistoryObject();
   }, [entryObj, refreshHistory]);
 
-  const handleMatchTitle = async (title) => {
+  const handleMatchTitle = async (title: string): Promise<void> => {
     try {
       console.log('title in handleMatchTitle', title);
-      const user = JSON.parse(localStorage.getItem('user'));
+      const userItem = localStorage.getItem('user');
+      if (!userItem) {
+        console.error('No user found in localStorage');
+        return;
+      }
+
+      const user: User = JSON.parse(userItem);
+      if (!user || !user.name) {
+        console.error('Invalid user data');
+        return;
+      }
+
       const response = await ApiFetch.matchTitle(title, user.name);
       console.log('Requested entry object from Database:', response);
-      setEntryObj(response);
+
+      if (response && response.data) {
+        // Map the API response to our EntryObject structure
+        const mappedEntry: EntryObject = {
+          title: response.data.problemTitle || title,
+          prompt: '', // Not available in HistoryObject
+          responseStrategy: response.data.strategy || '',
+          probability: 0, // Not available in HistoryObject
+          practiceProblems: response.data.practiceProblems || [],
+        };
+        setEntryObj(mappedEntry);
+      }
     } catch (err) {
       console.error('This is the error in handleMatchTitle ', err);
     }
@@ -102,10 +185,10 @@ function History({
             historyObj.map((item, index) => (
               <button
                 key={index}
-                onClick={() => handleMatchTitle(item.title)}
+                onClick={() => handleMatchTitle(item.problemTitle)}
                 className='w-full text-left p-4 rounded-lg bg-white/10 hover:bg-white/20 transition-colors duration-200 text-[#C2C8C5]'
               >
-                {item.title}
+                {item.problemTitle}
               </button>
             ))
           ) : (
@@ -115,6 +198,6 @@ function History({
       )}
     </div>
   );
-}
+};
 
 export default History;
