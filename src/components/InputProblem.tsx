@@ -1,6 +1,12 @@
 import React from 'react';
 
-function InputProblem({ inputProblem, title }) {
+// Type definitions
+interface InputProblemProps {
+  inputProblem: string;
+  title: string;
+}
+
+const InputProblem: React.FC<InputProblemProps> = ({ inputProblem, title }) => {
   return (
     <div className='p-4 mb-4 rounded-lg shadow-lg bg-[#ffffff]/70 break-words'>
       <h2 className='text-3xl font-poppins font-bold mb-2'>
@@ -15,6 +21,6 @@ function InputProblem({ inputProblem, title }) {
       <p className='text-xl font-poppins font-open-sans'>{inputProblem}</p>
     </div>
   );
-}
+};
 
 export default InputProblem;
