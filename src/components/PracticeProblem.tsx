@@ -1,18 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { MutatingDots } from 'react-loader-spinner';
 
-function PracticeProblem({
+// Type definitions
+interface PracticeProblem {
+  title: string;
+  difficulty: string;
+  description: string;
+  hints?: string[];
+  problem?: string; // Some problems use 'problem' instead of 'description'
+  isCompleted?: boolean; // Added for checkbox functionality
+}
+
+interface EntryObject {
+  title: string;
+  prompt: string;
+  responseStrategy: string;
+  probability: number;
+  practiceProblems: PracticeProblem[];
+}
+
+interface PracticeProblemProps {
+  practiceProblems: PracticeProblem[];
+  loading: boolean;
+  setPracticeProblems: React.Dispatch<React.SetStateAction<PracticeProblem[]>>;
+  setEntryObj: React.Dispatch<React.SetStateAction<EntryObject>>;
+  entryObj: EntryObject;
+}
+
+const PracticeProblem: React.FC<PracticeProblemProps> = ({
   practiceProblems,
   loading,
   setPracticeProblems,
   setEntryObj,
   entryObj,
-}) {
+}) => {
   // console.log("I am the setpracticeProblems props inside of PracticeProblem component: ", {setPracticeProblems})
   // console.log(`This is practiceProblems inside PracticeProblem component. Am I defined? Hm...: ${JSON.stringify(practiceProblems, null, 2)}`)
   // console.log(`This is the entryObj object inside PracticeProblem component. Am I updating? Hm...... :${JSON.stringify(entryObj, null, 2)}`)
-  const [containerLoaded, setContainerLoaded] = useState(false);
-  const [contentLoaded, setContentLoaded] = useState(false);
+
+  const [containerLoaded, setContainerLoaded] = useState<boolean>(false);
+  const [contentLoaded, setContentLoaded] = useState<boolean>(false);
 
   /// USE EFFECT For container fade-in on mount
   useEffect(() => {
@@ -30,7 +57,7 @@ function PracticeProblem({
   }, [loading, practiceProblems]);
 
   //?create handler to set isCompleted to true if checkbox is clicked
-  const handleCheckmark = async (clickedBox) => {
+  const handleCheckmark = async (clickedBox: number): Promise<void> => {
     //clickedBox is being identified by its ID, which is the index
     //toggle problem.isCompleted to true (use ! i think no true since we want to able to uncheck)
     //use functional state handler to change state of problem array
@@ -115,20 +142,22 @@ function PracticeProblem({
                   </svg>
                 )}
               </label>
-              <li className='pl-6 text-lg font-poppins'>{problem.problem}</li>
+              <li className='pl-6 text-lg font-poppins'>
+                {problem.problem || problem.description || problem.title}
+              </li>
               <input
                 type='checkbox'
                 id={`checkbox-${index}`}
-                checked={problem.isCompleted}
+                checked={problem.isCompleted || false}
                 onChange={() => handleCheckmark(index)}
                 className='hidden'
-              />{' '}
+              />
             </div>
           ))}
         </ul>
       )}
     </div>
   );
-}
+};
 
 export default PracticeProblem;
