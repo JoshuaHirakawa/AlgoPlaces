@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { MutatingDots } from 'react-loader-spinner';
 
-function Strategy({ strategy, probability, loading }) {
-  const [containerLoaded, setContainerLoaded] = useState(false);
-  const [contentLoaded, setContentLoaded] = useState(false);
+interface StrategyProps {
+  strategy?: string;
+  probability?: string;
+  loading: boolean;
+}
+
+const Strategy: React.FC<StrategyProps> = ({
+  strategy,
+  probability,
+  loading,
+}) => {
+  const [containerLoaded, setContainerLoaded] = useState<boolean>(false);
+  const [contentLoaded, setContentLoaded] = useState<boolean>(false);
 
   /// USE EFFECT For container fade-in on mount
   useEffect(() => {
@@ -56,6 +66,6 @@ function Strategy({ strategy, probability, loading }) {
       )}
     </div>
   );
-}
+};
 
 export default Strategy;

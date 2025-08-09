@@ -24,7 +24,8 @@ router.post('/generate', parseUserQuery, async (req, res) => {
 router.post('/practice-problems', parseUserQuery, async (req, res) => {
   try {
     await generatePracticeProblems(req, res, () => {});
-    res.json(res.locals.practiceProblems);
+    // Return in the format expected by frontend
+    res.json({ problems: res.locals.practiceProblems });
   } catch (error) {
     console.error('Error in generate practice problems:', error);
     res.status(500).json({ error: 'Internal server error' });
