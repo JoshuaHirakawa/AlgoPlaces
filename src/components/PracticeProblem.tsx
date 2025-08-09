@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MutatingDots } from 'react-loader-spinner';
 
 // Type definitions
-interface PracticeProblem {
+interface PracticeProblemData {
   title: string;
   difficulty: string;
   description: string;
@@ -16,13 +16,15 @@ interface EntryObject {
   prompt: string;
   responseStrategy: string;
   probability: number;
-  practiceProblems: PracticeProblem[];
+  practiceProblems: PracticeProblemData[];
 }
 
 interface PracticeProblemProps {
-  practiceProblems: PracticeProblem[];
+  practiceProblems: PracticeProblemData[];
   loading: boolean;
-  setPracticeProblems: React.Dispatch<React.SetStateAction<PracticeProblem[]>>;
+  setPracticeProblems: React.Dispatch<
+    React.SetStateAction<PracticeProblemData[]>
+  >;
   setEntryObj: React.Dispatch<React.SetStateAction<EntryObject>>;
   entryObj: EntryObject;
 }
@@ -34,9 +36,16 @@ const PracticeProblem: React.FC<PracticeProblemProps> = ({
   setEntryObj,
   entryObj,
 }) => {
-  // console.log("I am the setpracticeProblems props inside of PracticeProblem component: ", {setPracticeProblems})
-  // console.log(`This is practiceProblems inside PracticeProblem component. Am I defined? Hm...: ${JSON.stringify(practiceProblems, null, 2)}`)
-  // console.log(`This is the entryObj object inside PracticeProblem component. Am I updating? Hm...... :${JSON.stringify(entryObj, null, 2)}`)
+  console.log(
+    'PracticeProblem component - practiceProblems:',
+    practiceProblems
+  );
+  console.log(
+    'PracticeProblem component - practiceProblems length:',
+    practiceProblems.length
+  );
+  console.log('PracticeProblem component - loading:', loading);
+  console.log('PracticeProblem component - entryObj:', entryObj);
 
   const [containerLoaded, setContainerLoaded] = useState<boolean>(false);
   const [contentLoaded, setContentLoaded] = useState<boolean>(false);
@@ -99,6 +108,10 @@ const PracticeProblem: React.FC<PracticeProblemProps> = ({
             radius={15}
             visible={true}
           />
+        </div>
+      ) : practiceProblems.length === 0 ? (
+        <div className='text-white text-lg font-poppins'>
+          No practice problems available yet. Waiting for data...
         </div>
       ) : (
         <ul

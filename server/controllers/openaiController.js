@@ -112,11 +112,20 @@ const generatePracticeProblems = async (req, res, next) => {
       problemsResponse.data.choices[0].message.content.trim();
     const practiceProblems = problemsText
       .split('\n')
-      .map((problem) => ({
-        problem: problem.trim(),
-        isCompleted: false,
-      }))
-      .filter((problem) => problem.problem.length > 0);
+      .filter((line) => line.trim().length > 0 && line.includes('Problem'))
+      .map((problem, index) => {
+        // Extract the problem text after "Problem X:"
+        const problemText = problem.replace(/Problem \d+:\s*/, '').trim();
+        return {
+          title: `Practice Problem ${index + 1}`,
+          difficulty: 'Medium', // Default difficulty
+          description: problemText,
+          problem: problemText, // Keep both for compatibility
+          isCompleted: false,
+        };
+      });
+
+    console.log('Parsed practice problems:', practiceProblems);
 
     res.locals.practiceProblems = practiceProblems;
     next();

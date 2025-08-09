@@ -23,7 +23,7 @@ interface User {
   picture?: string;
 }
 
-interface PracticeProblem {
+interface PracticeProblemData {
   title: string;
   difficulty: string;
   description: string;
@@ -35,7 +35,7 @@ interface EntryObject {
   prompt: string;
   responseStrategy: string;
   probability: number;
-  practiceProblems: PracticeProblem[];
+  practiceProblems: PracticeProblemData[];
 }
 
 // API response types to match the actual backend
@@ -62,9 +62,9 @@ const Dashboard: React.FC = () => {
   const [title, setTitle] = useState<string>('');
   const [strategy, setStrategy] = useState<string>('');
   const [probability, setProbability] = useState<string>('');
-  const [practiceProblems, setPracticeProblems] = useState<PracticeProblem[]>(
-    []
-  );
+  const [practiceProblems, setPracticeProblems] = useState<
+    PracticeProblemData[]
+  >([]);
   const [prompt, setPrompt] = useState<string>('');
   const [entryObj, setEntryObj] = useState<EntryObject>({
     title: '',
@@ -151,14 +151,19 @@ const Dashboard: React.FC = () => {
     try {
       const result = await ApiFetch.requestPracticeProblems(userQuery);
       console.log('generated practice problems: ', result);
+      console.log('result.problems:', result?.problems);
+      console.log('typeof result:', typeof result);
 
       if (result && result.problems) {
+        console.log('Setting practice problems:', result.problems);
         setPracticeProblems(result.problems);
         setEntryObj((prev) => ({
           ...prev,
           practiceProblems: result.problems || [],
         }));
         setHistoryObjIsComplete(true);
+      } else {
+        console.log('No problems found in result');
       }
     } catch (err) {
       console.error(`This is the error in getPracticeProblems: ${err}`);
