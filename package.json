@@ -1,13 +1,16 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "dev": "nodemon server/server.js",
+    "dev": "nodemon server/server.ts",
     "client": "webpack serve --mode development",
-    "server": "nodemon server/server.js",
+    "server": "nodemon server/server.ts",
+    "server:build": "cd server && tsc && node dist/server.js",
+    "server:dev": "cd server && ts-node server.ts",
     "dev:full": "concurrently \"npm run server\" \"npm run client\"",
     "dev:colored": "concurrently --kill-others-on-fail -p \"[{name}]\" -n \"SERVER,CLIENT\" -c \"yellow,cyan\" \"npm run server\" \"npm run client\""
   },
@@ -29,6 +32,11 @@
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^24.2.1",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "autoprefixer": "^10.4.20",
@@ -44,6 +52,7 @@
     "tailwind-scrollbar": "^2.1.0",
     "tailwindcss": "^3.3.5",
     "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
     "webpack": "^5.36.2",
     "webpack-cli": "^4.6.0",
